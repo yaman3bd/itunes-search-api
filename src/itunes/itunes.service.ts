@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { HttpService } from '@nestjs/axios';
-import { map, catchError, throwError, firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, map, throwError } from 'rxjs';
 import {
   ItunesSearchResponse,
   ItunesSearchResult,
 } from './types/itunes-search-response';
+import { buildLookupUrl, buildSearchUrl } from '../../helper';
 
 @Injectable()
 export class ItunesService {
@@ -20,64 +21,77 @@ export class ItunesService {
     private readonly httpService: HttpService,
   ) {}
 
-  async lookup(key: string, value: string): Promise<ItunesSearchResponse> {
-    if (!key || !value) {
-      this.logger.error('Key and value are required for lookup');
-      throw new Error('Key and value are required for lookup');
-    }
-
-    const url = `https://itunes.apple.com/lookup?${key}=${encodeURIComponent(value)}`;
-
-    const response = await firstValueFrom(
-      this.httpService.get<ItunesSearchResponse>(url).pipe(
-        map((res) => res.data),
-        catchError((error) => {
-          this.logger.error('iTunes API call failed', error?.message || error);
-          return throwError(() => new Error('Failed to call iTunes API'));
-        }),
-      ),
-    );
-
-    if (!response || !response.results) {
-      this.logger.warn('iTunes returned empty results');
-      throw new InternalServerErrorException('Unexpected iTunes response');
-    }
-
-    return response;
-  }
-
-  async searchAndPersist(term: string, limit?: string, media?: string) {
+  async search(term: string, limit?: string, page?: string) {
     if (!term) {
-      this.logger.error('Search term is required');
       throw new Error('Search term is required');
     }
 
-    const urlParams = new URLSearchParams();
-    urlParams.set('term', encodeURIComponent(term.trim()));
-    urlParams.set('media', media || 'podcast');
-    if (limit) {
-      urlParams.set('limit', limit);
-    }
-    const url = `https://itunes.apple.com/search?media=podcast&term=${encodeURIComponent(term)}`;
+    const url = buildSearchUrl(term, {
+      media: 'podcast',
+      explicit: true,
+    });
 
-    const response = await firstValueFrom(
-      this.httpService.get<ItunesSearchResponse>(url).pipe(
-        map((res) => res.data),
-        catchError((error) => {
-          this.logger.error('iTunes API call failed', error?.message || error);
-          return throwError(() => new Error('Failed to call iTunes API'));
-        }),
-      ),
-    );
-
-    if (!response || !response.results) {
-      this.logger.warn('iTunes returned empty results');
-      throw new InternalServerErrorException('Unexpected iTunes response');
-    }
+    const response = await this.callItunesApi<ItunesSearchResponse>(url);
 
     await this.saveResultsToDb(response.results);
 
     return response;
+  }
+
+  async getPodcastDetails(podcastId: string, limit?: string, offset?: string) {
+    if (!podcastId) throw new Error('Podcast ID is required');
+
+    const limitValue = limit ? Number(limit) : 8;
+
+    const lookupOptions: Record<string, any> = {
+      media: 'podcast',
+      entity: 'podcastEpisode',
+      limit: limitValue,
+      offset: offset ? Number(offset) : 0,
+    };
+
+    const url = buildLookupUrl('id', podcastId, lookupOptions);
+
+    console.log(url);
+    return await this.callItunesApi<ItunesSearchResponse>(url);
+  }
+
+  async getEpisode(collectionId: string, trackId: string) {
+    if (!collectionId || !trackId) throw new Error('Episode ID is required');
+
+    const url = buildLookupUrl('id', collectionId, {
+      media: 'podcast',
+      entity: 'podcastEpisode',
+    });
+
+    const response = await this.callItunesApi<ItunesSearchResponse>(url);
+
+    if (!response.results?.length) {
+      throw new InternalServerErrorException('Episode not found');
+    }
+
+    return (
+      response.results.find(
+        (result) => result.trackId.toString() === trackId,
+      ) || null
+    );
+  }
+
+  async callItunesApi<T>(url: string): Promise<T> {
+    try {
+      return await firstValueFrom(
+        this.httpService.get<T>(`https://itunes.apple.com/${url}`).pipe(
+          map((res) => res.data),
+          catchError((error) => {
+            this.logger.error('iTunes API failed', error?.message || error);
+            return throwError(() => new Error('Failed to call iTunes API'));
+          }),
+        ),
+      );
+    } catch (error) {
+      this.logger.error('iTunes API call failed', error);
+      throw new InternalServerErrorException('Failed to call iTunes API');
+    }
   }
 
   private async saveResultsToDb(results: ItunesSearchResult[]) {
@@ -87,7 +101,7 @@ export class ItunesService {
         skipDuplicates: true,
       });
     } catch (error) {
-      this.logger.error(`Failed to save trackId `, error);
+      this.logger.error('Failed to save search results', error);
     }
   }
 }
