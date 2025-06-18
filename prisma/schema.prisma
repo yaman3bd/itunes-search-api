@@ -47,3 +47,48 @@ model Track {
   @@index([collectionName])
   @@index([primaryGenreName])
 }
+
+model Podcast {
+  id              Int      @id @default(autoincrement())
+  collectionId    Int      @unique
+  trackId         Int      @unique
+  artistName      String
+  collectionName  String
+  trackName       String
+  feedUrl         String
+  artworkUrl30    String
+  artworkUrl60    String
+  artworkUrl100   String
+  artworkUrl600   String
+  releaseDate     DateTime
+  trackCount      Int
+  trackTimeMillis Int
+  country         String
+  currency        String
+  primaryGenreName String
+
+  lastFetchedAt   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  episodes        Episode[]
+}
+
+
+model Episode {
+  id            Int       @id @default(autoincrement())
+  trackId       Int?      @unique
+  podcastId     Int
+  title         String
+  audioUrl      String?
+  duration      String?
+  pubDate       DateTime
+  description   String?
+  episodeNumber Int?
+  episodeType   String?
+  image         String?
+
+  podcast       Podcast   @relation(fields: [podcastId], references: [id])
+
+  createdAt     DateTime  @default(now())
+}
