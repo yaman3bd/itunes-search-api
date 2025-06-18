@@ -8,46 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Track {
-  id                      Int       @id @default(autoincrement())
-  wrapperType             String?
-  kind                    String?    @default("podcast")
-  artistId            Int?
-  collectionId            Int?
-  trackId                 Int?       @unique
-  artistName              String?
-  collectionName          String?
-  trackName               String?
-  collectionCensoredName  String?
-  trackCensoredName       String?
-  collectionViewUrl       String?
-  feedUrl                 String?
-  artistViewUrl            String?
-  trackViewUrl            String?
-  artworkUrl30            String?
-  artworkUrl60            String?
-  artworkUrl100           String?
-  artworkUrl600           String?
-  collectionPrice         Float?     @default(0)
-  trackPrice              Float?     @default(0)
-  collectionHdPrice       Float?     @default(0)
-  releaseDate             DateTime?
-  collectionExplicitness  String?
-  trackExplicitness       String?
-  trackCount              Int?
-  trackTimeMillis         Int?
-  country                 String?
-  currency                String?
-  primaryGenreName        String?
-  contentAdvisoryRating   String?
-  genreIds                String[]
-  genres                  String[]
-  @@index([trackId])
-  @@index([artistName])
-  @@index([collectionName])
-  @@index([primaryGenreName])
-}
-
 model Podcast {
   id              Int      @id @default(autoincrement())
   collectionId    Int      @unique
