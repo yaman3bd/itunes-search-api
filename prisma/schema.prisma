@@ -67,11 +67,16 @@ model Podcast {
   currency        String
   primaryGenreName String
 
+  isFavorite      Boolean  @default(false)
   lastFetchedAt   DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   episodes        Episode[]
+  @@index([collectionId])
+  @@index([trackId])
+  @@index([artistName])
+  @@index([collectionName])
 }
 
 
@@ -88,6 +93,7 @@ model Episode {
   episodeType   String?
   image         String?
 
+  isFavorite    Boolean   @default(false)
   podcast       Podcast   @relation(fields: [podcastId], references: [id])
 
   createdAt     DateTime  @default(now())

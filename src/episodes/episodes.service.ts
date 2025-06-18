@@ -28,6 +28,13 @@ export class EpisodesService {
     });
   }
 
+  async setFavorite(id: number, isFavorite: boolean) {
+    return this.prisma.episode.update({
+      where: { id },
+      data: { isFavorite },
+    });
+  }
+
   async getEpisodesForPodcast(podcastId: number, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
@@ -35,6 +42,9 @@ export class EpisodesService {
       where: { id: podcastId },
     });
 
+    if (!podcast) {
+      throw new NotFoundException(`Podcast with ID ${podcastId} not found`);
+    }
     const shouldRefresh =
       !podcast?.lastFetchedAt ||
       new Date().getTime() - new Date(podcast.lastFetchedAt).getTime() >

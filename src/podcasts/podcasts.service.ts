@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { ItunesService } from '../itunes/itunes.service';
@@ -74,11 +74,23 @@ export class PodcastsService {
   }
 
   async getById(id: number) {
-    return this.prisma.podcast.findUnique({
+    const podcast = await this.prisma.podcast.findUnique({
       where: { id },
     });
+
+    if (!podcast) {
+      throw new NotFoundException(`No episodes found for podcast ${id}`);
+    }
+
+    return podcast;
   }
 
+  async setFavorite(id: number, isFavorite: boolean) {
+    return this.prisma.podcast.update({
+      where: { id },
+      data: { isFavorite },
+    });
+  }
   async getPaginated(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 

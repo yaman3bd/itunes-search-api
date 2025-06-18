@@ -56,6 +56,7 @@ CREATE TABLE "Podcast" (
     "country" TEXT NOT NULL,
     "currency" TEXT NOT NULL,
     "primaryGenreName" TEXT NOT NULL,
+    "isFavorite" BOOLEAN NOT NULL DEFAULT false,
     "lastFetchedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -76,6 +77,7 @@ CREATE TABLE "Episode" (
     "episodeNumber" INTEGER,
     "episodeType" TEXT,
     "image" TEXT,
+    "isFavorite" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Episode_pkey" PRIMARY KEY ("id")
@@ -101,6 +103,18 @@ CREATE UNIQUE INDEX "Podcast_collectionId_key" ON "Podcast"("collectionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Podcast_trackId_key" ON "Podcast"("trackId");
+
+-- CreateIndex
+CREATE INDEX "Podcast_collectionId_idx" ON "Podcast"("collectionId");
+
+-- CreateIndex
+CREATE INDEX "Podcast_trackId_idx" ON "Podcast"("trackId");
+
+-- CreateIndex
+CREATE INDEX "Podcast_artistName_idx" ON "Podcast"("artistName");
+
+-- CreateIndex
+CREATE INDEX "Podcast_collectionName_idx" ON "Podcast"("collectionName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Episode_trackId_key" ON "Episode"("trackId");

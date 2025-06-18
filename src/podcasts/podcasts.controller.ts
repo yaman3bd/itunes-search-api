@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  ParseIntPipe,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import { PodcastsService } from './podcasts.service';
 import { EpisodesService } from '../episodes/episodes.service';
 
@@ -37,8 +45,16 @@ export class PodcastsController {
     );
   }
 
+  @Patch(':id/favorite')
+  async toggleFavoritePodcast(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('isFavorite') isFavorite: boolean,
+  ) {
+    return this.podcastsService.setFavorite(id, isFavorite);
+  }
+
   @Get(':id/episodes/latest')
-  async getLatestEpisode(@Param('id', ParseIntPipe) id: any) {
+  async getLatestEpisode(@Param('id', ParseIntPipe) id: number) {
     return this.episodesService.getLatestEpisode(id);
   }
 
@@ -48,5 +64,14 @@ export class PodcastsController {
     @Param('episodeId', ParseIntPipe) episodeId: number,
   ) {
     return this.episodesService.getById(episodeId);
+  }
+
+  @Patch(':id/episodes/:episodeId/favorite')
+  async toggleFavoriteEpisode(
+    @Param('id', ParseIntPipe) podcastId: number,
+    @Param('episodeId', ParseIntPipe) episodeId: number,
+    @Body('isFavorite') isFavorite: boolean,
+  ) {
+    return this.episodesService.setFavorite(episodeId, isFavorite);
   }
 }
