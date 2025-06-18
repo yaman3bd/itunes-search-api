@@ -1,5 +1,3 @@
-# docker-compose.yml
-
 version: '3.8'
 services:
 
@@ -7,14 +5,27 @@ services:
     image: postgres:17.0
     restart: always
     environment:
-      - POSTGRES_DB=itunes_search_api
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=password
+      POSTGRES_DB: itunes_search_api
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
       - '5432:5432'
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      # adjust your DB URL/env var names as used in your code
+      DATABASE_URL: postgres://root:password@postgres:5432/itunes_search_api
+    ports:
+      - '3000:3000'
+    command: npm run start
+
 volumes:
   postgres:
-
