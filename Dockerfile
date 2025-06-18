@@ -17,4 +17,4 @@ RUN npm run build
 EXPOSE 3000
 
 # start the server (assumes "start" script runs your built app)
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start","npm run db:deploy && npm run start:prod"]
