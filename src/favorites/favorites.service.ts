@@ -14,6 +14,9 @@ export class FavoritesService {
     const episodes = await this.prisma.episode.findMany({
       where: { isFavorite: true },
       orderBy: { pubDate: 'desc' },
+      include: {
+        podcast: true,
+      },
     });
 
     return {
