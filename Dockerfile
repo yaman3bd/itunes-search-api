@@ -6,7 +6,8 @@ WORKDIR /usr/src/app
 
 # install dependencies
 COPY package*.json ./
-RUN npm install --production
+RUN npm install --production \
+ && npm install -g @nestjs/cli
 
 # copy source and build
 COPY . .
