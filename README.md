@@ -3,15 +3,19 @@
 ```bash
 git clone git@github.com:yaman3bd/itunes-search-api.git
 cd itunes-search-api
-pnpm install
+npm install
 ```
 
 ## Running Locally
-Create a file named `.env` in the project root with the following content:
+Create `.env` file in the project root:
+```base
+cp .env.example .env
+```
+then add the following content:
 ```base
 DATABASE_URL="postgresql://<USER>:<PASSWORD>@<HOST>:5432/itunes_search_api"
 ```
-Replace <USER>, <PASSWORD>, and <HOST> with your database credentials.
+Replace `<USER>`, `<PASSWORD>`, and `<HOST>` with your database credentials.
 
 Then, run the database migrations
 ```
