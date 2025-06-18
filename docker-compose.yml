@@ -25,7 +25,7 @@ services:
       DATABASE_URL: postgres://root:password@postgres:5432/itunes_search_api
     ports:
       - '3000:3000'
-    command: npm run start
+    command: sh -c "npx prisma migrate deploy && npm run start"
 
 volumes:
   postgres:

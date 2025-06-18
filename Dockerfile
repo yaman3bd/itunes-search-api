@@ -11,7 +11,7 @@ RUN npm install --production \
 
 # copy source and build
 COPY . .
-RUN npm run db:deploy && npm run build
+RUN npm run build
 
 # expose your app’s port (adjust if different)
 EXPOSE 3000
